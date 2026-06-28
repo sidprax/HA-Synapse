@@ -65,13 +65,15 @@ export class FileManager {
     if (fileExists) {
       originalContent = await this.sftpManager.readFile(instanceName, config, absolutePath, 'utf8') as string;
       
-      // Create backup file inside .mcp_backups
-      const timestamp = Date.now();
-      const sanitizedName = relativePath.replace(/[\/\\]/g, '_');
-      backupPath = resolveSafePath(rootDir, `.mcp_backups/${sanitizedName}.${timestamp}.bak`, isRemote);
-      
-      await this.sftpManager.writeFile(instanceName, config, backupPath, originalContent);
-      console.error(`[FileManager][${instanceName}] Backup created at ${backupPath}`);
+      if (config.backupEnabled !== false) {
+        // Create backup file inside .mcp_backups
+        const timestamp = Date.now();
+        const sanitizedName = relativePath.replace(/[\/\\]/g, '_');
+        backupPath = resolveSafePath(rootDir, `.mcp_backups/${sanitizedName}.${timestamp}.bak`, isRemote);
+        
+        await this.sftpManager.writeFile(instanceName, config, backupPath, originalContent);
+        console.error(`[FileManager][${instanceName}] Backup created at ${backupPath}`);
+      }
     }
 
     try {

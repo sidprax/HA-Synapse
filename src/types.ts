@@ -14,6 +14,7 @@ export interface InstanceConfig {
   remoteConfigDir?: string; // Path on remote (e.g. "/homeassistant" or "/config")
   localConfigDir?: string;  // Path on local (e.g. "/config" or relative path)
   ssh?: SSHConfig;
+  backupEnabled?: boolean; // Whether to keep persistent backups in .mcp_backups
 }
 
 export interface HASynapseConfig {

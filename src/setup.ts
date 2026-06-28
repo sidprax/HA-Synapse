@@ -39,6 +39,9 @@ async function runSetup() {
     const modeInput = await rl.question('4. Enter connection mode (local / ssh) [default: ssh]: ');
     const mode = (modeInput.toLowerCase() === 'local') ? 'local' : 'ssh';
 
+    const backupInput = await rl.question('5. Enable persistent backups of configuration changes? (y/n) [default: y]: ') || 'y';
+    const backupEnabled = backupInput.toLowerCase() !== 'n';
+
     let remoteConfigDir = '/homeassistant';
     let localConfigDir = './';
     let sshConfig: SSHConfig | undefined = undefined;
@@ -104,6 +107,7 @@ async function runSetup() {
       url: haUrl.trim(),
       token: haToken.trim(),
       mode,
+      backupEnabled,
       remoteConfigDir: mode === 'ssh' ? remoteConfigDir : undefined,
       localConfigDir: mode === 'local' ? localConfigDir : undefined,
       ssh: sshConfig
