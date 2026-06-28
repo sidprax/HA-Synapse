@@ -57,7 +57,11 @@ async function runSetup() {
       const port = parseInt(portStr, 10);
 
       const user = await rl.question('Enter SSH User [default: root]: ') || 'root';
-      const keyPath = await rl.question('Enter local path to your SSH private key (e.g., C:\\Users\\<username>\\.ssh\\id_ed25519): ');
+      const isWindows = os.platform() === 'win32';
+      const defaultKeyExample = isWindows 
+        ? 'C:\\Users\\<username>\\.ssh\\id_ed25519' 
+        : '~/.ssh/id_ed25519';
+      const keyPath = await rl.question(`Enter local path to your SSH private key (e.g., ${defaultKeyExample}): `);
       if (!keyPath) throw new Error('SSH private key path is required.');
 
       remoteConfigDir = await rl.question('Enter remote configuration directory on HA host [default: /homeassistant]: ') || '/homeassistant';
@@ -146,8 +150,16 @@ async function runSetup() {
 
     // Print integration block
     const mcpScriptPath = path.resolve(__dirname, '../build/index.js').replace(/\\/g, '/');
+    const isWindows = os.platform() === 'win32';
+    const isMac = os.platform() === 'darwin';
+    const claudeConfigPath = isWindows 
+      ? '%APPDATA%\\Claude\\claude_desktop_config.json'
+      : isMac 
+        ? '~/Library/Application Support/Claude/claude_desktop_config.json'
+        : '~/.config/Claude/claude_desktop_config.json';
+
     console.log('\n--- Claude Desktop Configuration Integration ---');
-    console.log('Copy the following configuration block into your "%APPDATA%\\Claude\\claude_desktop_config.json" file:');
+    console.log(`Copy the following configuration block into your Claude Desktop config file (typically at ${claudeConfigPath}):`);
     
     const claudeConfigSnippet = {
       mcpServers: {
