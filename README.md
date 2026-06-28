@@ -43,17 +43,33 @@ It communicates over the network with one or more Home Assistant instances:
 
 ## Installation & Setup
 
-### 1. Prerequisites
+We provide a **Guided Setup Wizard** to make installation as simple as possible for both technical and non-technical users.
 
-1. **Home Assistant Access Token**:
-   * Open your Home Assistant UI, click on your profile (bottom left), go to the **Security** tab, and click **Create Token** at the bottom. Save this Long-Lived Access Token.
-2. **SSH Connection (For File Editing)**:
-   * Install the official **Advanced SSH & Web Terminal** add-on in Home Assistant.
-   * Configure key-based authentication in the add-on settings and expose port `22`.
+### 1. Prerequisite
+* **Home Assistant Long-Lived Access Token**:
+  * Open your Home Assistant UI, click on your profile name (bottom left), go to the **Security** tab, scroll to the bottom, and click **Create Token**. Save this token.
 
-### 2. Configuration File
+### 2. Run the Setup Wizard
+Clone the repository, install dependencies, and run the interactive setup tool:
 
-Create a configuration file named `.ha-synapse.json` in your user's home directory (e.g. `C:\Users\<username>\.ha-synapse.json` or `~/.ha-synapse.json`):
+```bash
+npm install
+npm run build
+npm run setup
+```
+
+The guided wizard will walk you through setting up your connection and offers to:
+1. **Auto-Provision SSH/SFTP (HA OS & Supervised)**: Automatically generate a secure SSH key pair locally, install the official "Terminal & SSH" add-on on your Home Assistant OS, configure it with the public key, expose port 22, and start it.
+2. **Auto-Install HACS**: Automatically download and install the Home Assistant Community Store (HACS) over the new SSH link.
+3. **Manual Fallback**: Let you input manual SSH details or local folders if running a containerized/Core Home Assistant instance.
+4. **Configure Backups**: Toggle whether the server keeps persistent timestamped backups of edited files.
+
+Once finished, the wizard will save your configuration to `~/.ha-synapse.json` and output the exact configuration block ready to paste into your Claude Desktop, Cursor, or coding agent settings.
+
+---
+
+### Manual Configuration (Optional)
+If you prefer to configure the server manually, create a `.ha-synapse.json` file in your home directory (e.g. `C:\Users\<username>\.ha-synapse.json` or `~/.ha-synapse.json`):
 
 ```json
 {
@@ -63,6 +79,7 @@ Create a configuration file named `.ha-synapse.json` in your user's home directo
       "url": "http://10.0.2.52:8123",
       "token": "YOUR_LONG_LIVED_ACCESS_TOKEN",
       "mode": "ssh",
+      "backupEnabled": true,
       "remoteConfigDir": "/homeassistant",
       "ssh": {
         "host": "10.0.2.52",
@@ -70,12 +87,6 @@ Create a configuration file named `.ha-synapse.json` in your user's home directo
         "user": "root",
         "keyPath": "C:\\Users\\<username>\\.ssh\\id_ed25519"
       }
-    },
-    "office": {
-      "url": "http://192.168.1.100:8123",
-      "token": "ANOTHER_LONG_LIVED_TOKEN",
-      "mode": "local",
-      "localConfigDir": "/config"
     }
   }
 }
