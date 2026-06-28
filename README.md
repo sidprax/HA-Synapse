@@ -1,9 +1,10 @@
 # HA Synapse 🧠
 
-**HA Synapse** is a robust Model Context Protocol (MCP) server designed to act as a bridge between LLM coding agents (such as Antigravity, Claude Code, Cursor, or Codex) and your **Home Assistant** instance(s). 
+**HA Synapse** is a Model Context Protocol (MCP) server designed to act as a bridge between LLM coding agents (such as Antigravity, Claude Code, Cursor, or Codex) and your **Home Assistant** instance(s). 
 
 Rather than executing ad-hoc API scripts, **HA Synapse** provides a standardized set of MCP tools and resources. This allows AI agents to read and modify configuration files safely, call services, dry-run templates, query history, and debug automation traces dynamically.
 
+Note: This was largely developed with agentic coding.
 ---
 
 ## Architecture: Where does HA Synapse live?
