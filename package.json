@@ -1,0 +1,28 @@
+{
+  "name": "ha-synapse",
+  "version": "1.0.0",
+  "description": "Home Assistant Model Context Protocol (MCP) Server",
+  "main": "build/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsx src/index.ts",
+    "test-conn": "tsx src/test-connection.ts",
+    "setup": "tsx src/setup.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "dotenv": "^16.4.5",
+    "ssh2": "^1.16.0",
+    "ws": "^8.18.0",
+    "yaml": "^2.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "@types/ssh2": "^1.15.0",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.2"
+  }
+}

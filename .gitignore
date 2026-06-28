@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Compilation
+build/
+*.tsbuildinfo
+
+# Configuration & Secrets
+.env
+.ha-synapse.json
+ha-synapse.json
+
+# Local Backups
+.mcp_backups/
+backups/
+
+# System Files
+.DS_Store
+Thumbs.db
