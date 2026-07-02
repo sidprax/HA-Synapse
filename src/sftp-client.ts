@@ -144,7 +144,7 @@ export class SftpClientManager {
   /**
    * Helper to run an SSH command and capture stdout.
    */
-  private async executeSshCommand(
+  public async executeSshCommand(
     instanceName: string,
     sshConfig: SSHConfig,
     command: string

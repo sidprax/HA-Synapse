@@ -32,6 +32,20 @@ export class FileManager {
   }
 
   /**
+   * Checks if a file exists within the sandbox.
+   */
+  public async exists(
+    instanceName: string,
+    config: InstanceConfig,
+    relativePath: string
+  ): Promise<boolean> {
+    const rootDir = this.getConfigDir(config);
+    const isRemote = config.mode === 'ssh';
+    const absolutePath = resolveSafePath(rootDir, relativePath, isRemote);
+    return this.sftpManager.exists(instanceName, config, absolutePath);
+  }
+
+  /**
    * Writes a file within the instance's sandbox.
    * If it is a YAML file, it validates the syntax locally, takes a backup, validates configuration
    * against the HA instance, and rolls back automatically if configuration check fails.

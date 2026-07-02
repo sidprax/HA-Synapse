@@ -150,10 +150,14 @@ To use HA Synapse with Claude Desktop, add it to your `claude_desktop_config.jso
   * `read_ha_file`: Sandbox-constrained file read.
   * `write_ha_file`: Safety-wrapped file writing with config validation rollback.
   * `validate_ha_config`: Triggers configuration check.
+  * `get_ha_logs`: Retrieve the latest Home Assistant core logs from `home-assistant.log`.
   * `reload_ha`: Reloads core, templates, automations, scripts, and themes.
   * `restart_ha`: Restarts the Home Assistant core.
+* **Lovelace & Dashboard Resource Management**:
+  * `manage_lovelace_resources`: List, create, update, or delete Lovelace dashboard resources (custom cards, themes, modules). Allows cache-busting by updating URL query parameters.
 * **Orchestration & Diagnostics**:
   * `render_template`: Evaluates Jinja2 template strings in the HA engine.
   * `get_history`: Fetches historical state changes.
   * `get_automation_traces`: Fetches run histories of automations.
   * `get_automation_trace_details`: Fetches execution steps of a specific trace.
+  * `execute_host_command`: Run diagnostic and system commands directly on the Home Assistant host (SSH mode only).

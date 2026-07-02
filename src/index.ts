@@ -323,6 +323,77 @@ const TOOLS: Tool[] = [
       },
     },
   },
+  {
+    name: 'get_ha_logs',
+    description: 'Retrieve the latest Home Assistant core logs from home-assistant.log.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        lines: {
+          type: 'integer',
+          description: 'Number of log lines to retrieve (default: 50, max: 500).',
+        },
+        filter: {
+          type: 'string',
+          description: 'Case-insensitive keyword to filter log lines (e.g. "ERROR" or "warning").',
+        },
+        instance: {
+          type: 'string',
+          description: 'The name of the Home Assistant instance.',
+        },
+      },
+    },
+  },
+  {
+    name: 'manage_lovelace_resources',
+    description: 'List, create, update, or delete Lovelace dashboard resources (custom cards, themes, modules). Bumping url query params (e.g. ?v=1.0.1) forces browsers to refresh their caches.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action: {
+          type: 'string',
+          enum: ['list', 'create', 'update', 'delete'],
+          description: 'Action to perform: list, create, update, delete.',
+        },
+        resourceId: {
+          type: 'string',
+          description: 'The unique ID of the Lovelace resource (required for update and delete actions).',
+        },
+        resourceType: {
+          type: 'string',
+          enum: ['css', 'js', 'module', 'html'],
+          description: 'Type of resource (required for create and update actions, default is module).',
+        },
+        url: {
+          type: 'string',
+          description: 'The URL path of the resource (e.g., "/local/custom-card.js?v=1.0.0", required for create and update actions).',
+        },
+        instance: {
+          type: 'string',
+          description: 'The name of the Home Assistant instance.',
+        },
+      },
+      required: ['action'],
+    },
+  },
+  {
+    name: 'execute_host_command',
+    description: 'Executes an arbitrary shell command on the Home Assistant host (SSH mode only). Use this to check host processes, disk usage, or run network diagnostics.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        command: {
+          type: 'string',
+          description: 'The shell command to run on the HA host.',
+        },
+        instance: {
+          type: 'string',
+          description: 'The name of the Home Assistant instance.',
+        },
+      },
+      required: ['command'],
+    },
+  },
 ];
 
 // --- Register Handlers ---
@@ -472,6 +543,77 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case 'restart_ha': {
         await client.callService('homeassistant', 'restart');
         return { content: [{ type: 'text', text: JSON.stringify({ success: true, message: 'Restart command sent.' }) }] };
+      }
+
+      case 'get_ha_logs': {
+        const lines = (args?.lines as number) || 50;
+        const filterStr = args?.filter as string | undefined;
+
+        const logPath = 'home-assistant.log';
+        const exists = await fileManager.exists(instName, config, logPath);
+        if (!exists) {
+          return { content: [{ type: 'text', text: 'Log file home-assistant.log not found.' }] };
+        }
+
+        const content = await fileManager.readFile(instName, config, logPath, 'utf8') as string;
+        let logLines = content.split('\n');
+
+        if (filterStr) {
+          const lowerFilter = filterStr.toLowerCase();
+          logLines = logLines.filter((line) => line.toLowerCase().includes(lowerFilter));
+        }
+
+        const tailLines = logLines.slice(-lines);
+        return { content: [{ type: 'text', text: tailLines.join('\n') }] };
+      }
+
+      case 'manage_lovelace_resources': {
+        const action = args?.action as string;
+        const resourceId = args?.resourceId as string | number | undefined;
+        const resourceType = (args?.resourceType as string) || 'module';
+        const url = args?.url as string | undefined;
+
+        switch (action) {
+          case 'list': {
+            const list = await client.sendWSCommand('lovelace/resources');
+            return { content: [{ type: 'text', text: JSON.stringify(list, null, 2) }] };
+          }
+          case 'create': {
+            if (!url) throw new Error('url parameter is required for create action.');
+            const res = await client.sendWSCommand('lovelace/resources/create', {
+              res_type: resourceType,
+              url,
+            });
+            return { content: [{ type: 'text', text: JSON.stringify({ success: true, result: res }, null, 2) }] };
+          }
+          case 'update': {
+            if (!resourceId) throw new Error('resourceId parameter is required for update action.');
+            const updateArgs: Record<string, any> = { resource_id: resourceId };
+            if (url) updateArgs.url = url;
+            if (resourceType) updateArgs.res_type = resourceType;
+
+            const res = await client.sendWSCommand('lovelace/resources/update', updateArgs);
+            return { content: [{ type: 'text', text: JSON.stringify({ success: true, result: res }, null, 2) }] };
+          }
+          case 'delete': {
+            if (!resourceId) throw new Error('resourceId parameter is required for delete action.');
+            const res = await client.sendWSCommand('lovelace/resources/delete', {
+              resource_id: resourceId,
+            });
+            return { content: [{ type: 'text', text: JSON.stringify({ success: true, result: res }, null, 2) }] };
+          }
+          default:
+            throw new Error(`Invalid action: ${action}`);
+        }
+      }
+
+      case 'execute_host_command': {
+        if (config.mode !== 'ssh') {
+          return { content: [{ type: 'text', text: 'Host commands can only be executed in SSH mode.' }] };
+        }
+        const command = args?.command as string;
+        const result = await sftpManager.executeSshCommand(instName, config.ssh!, command);
+        return { content: [{ type: 'text', text: result }] };
       }
 
       default:
